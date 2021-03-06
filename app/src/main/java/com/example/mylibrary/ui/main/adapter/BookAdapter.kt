@@ -7,8 +7,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mylibrary.databinding.ItemNewBookBinding
 import java.lang.Error
 
+sealed class AdaptedLimit {
+    data class Limited(val limit: Int) : AdaptedLimit()
+    object Unlimited : AdaptedLimit()
+}
+
+
 //private val bookClicked: BookClicked
-class BookAdapter(): RecyclerView.Adapter<BookAdapterViewHolder<ViewDataBinding>>() {
+class BookAdapter(
+    val items: AdaptedLimit
+): RecyclerView.Adapter<BookAdapterViewHolder<ViewDataBinding>>() {
 
     private val data: MutableList<BookAdapterItem> = mutableListOf()
 
@@ -18,7 +26,10 @@ class BookAdapter(): RecyclerView.Adapter<BookAdapterViewHolder<ViewDataBinding>
         this.notifyDataSetChanged()
     }
 
-    override fun getItemCount(): Int = data.size
+    override fun getItemCount(): Int = when(items) {
+        is AdaptedLimit.Limited -> minOf(data.size, items.limit)
+        is AdaptedLimit.Unlimited -> data.size
+    }
 
     override fun onBindViewHolder(holder: BookAdapterViewHolder<ViewDataBinding>, position: Int) {
         holder.bind(data[position])
